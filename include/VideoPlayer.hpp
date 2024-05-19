@@ -54,11 +54,10 @@ namespace videoplayer {
 
         bool m_paused;
         bool m_loop;
-        bool m_stopped;
         float m_volume = 1.0f;
 
     public:
-
+         bool m_stopped; // i need to know when it stops!
         /**
          * @brief Allocates and initializes a video player.
          * 
