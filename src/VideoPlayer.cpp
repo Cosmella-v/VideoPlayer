@@ -43,7 +43,7 @@ const char* APP_FRAGMENT_SHADER_YCRCB = APP_SHADER_SOURCE(
 );
 
 namespace videoplayer {
-    bool VideoPlayer::init(std::filesystem::path const& path, bool loop) {
+    inline bool VideoPlayer::init(std::filesystem::path const& path, bool loop) {
         if (!CCNode::init()) return false;
 
         // GENERAL
@@ -120,7 +120,7 @@ namespace videoplayer {
         return true;
     };
 
-    void VideoPlayer::initAudio() {
+    inline void VideoPlayer::initAudio() {
         FMODAudioEngine* engine = FMODAudioEngine::sharedEngine();
 
         int sampleRate = plm_get_samplerate(m_stream);
@@ -150,7 +150,7 @@ namespace videoplayer {
         if (m_loop) m_channel->setCallback(&VideoPlayer::audioCallback);
     }
 
-    FMOD_RESULT F_CALLBACK VideoPlayer::audioCallback(FMOD_CHANNELCONTROL *chanControl, FMOD_CHANNELCONTROL_TYPE controlType, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbackType, void *commandData1, void *commandData2) {
+    inline FMOD_RESULT F_CALLBACK VideoPlayer::audioCallback(FMOD_CHANNELCONTROL *chanControl, FMOD_CHANNELCONTROL_TYPE controlType, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbackType, void *commandData1, void *commandData2) {
         if (callbackType != FMOD_CHANNELCONTROL_CALLBACK_END) return FMOD_OK;
 
         VideoPlayer* self;
@@ -169,7 +169,7 @@ namespace videoplayer {
         if (!m_paused) plm_decode(m_stream, delta);
     }
 
-    void VideoPlayer::draw() {
+    inline void VideoPlayer::draw() {
         CC_NODE_DRAW_SETUP();
 
         for (int i = 0; i < 3; i++) {
@@ -203,7 +203,7 @@ namespace videoplayer {
         onExit();
     }
 
-    void VideoPlayer::videoCallback(plm_t* mpeg, plm_frame_t* frame, void* user) {
+   inline void VideoPlayer::videoCallback(plm_t* mpeg, plm_frame_t* frame, void* user) {
         VideoPlayer* self = (VideoPlayer*) user;
 
         plm_plane_t* frames[3] = {&frame->y, &frame->cb, &frame->cr};
@@ -221,7 +221,7 @@ namespace videoplayer {
         }
     }
 
-    void VideoPlayer::audioCallback(plm_t* mpeg, plm_samples_t* samples, void* user) {
+   inline void VideoPlayer::audioCallback(plm_t* mpeg, plm_samples_t* samples, void* user) {
         VideoPlayer* self = (VideoPlayer*) user;
 
         for (unsigned int i = 0; i < samples->count * 2; i++) {
@@ -251,7 +251,7 @@ namespace videoplayer {
         return FMOD_OK;
     }
 
-    VideoPlayer* VideoPlayer::create(std::filesystem::path const& path, bool loop) {
+    inline VideoPlayer* VideoPlayer::create(std::filesystem::path const& path, bool loop) {
         VideoPlayer* ret = new VideoPlayer;
         if (ret && ret->init(path, loop)) {
             ret->autorelease();
@@ -261,15 +261,15 @@ namespace videoplayer {
         return nullptr;
     };
 
-    void VideoPlayer::setHeight(float height) {
+    inline void VideoPlayer::setHeight(float height) {
         setContentSize({height * m_dimensions.aspect(), height});
     }
 
-    void VideoPlayer::setWidth(float width) {
+    inline void VideoPlayer::setWidth(float width) {
         setContentSize({width, width / m_dimensions.aspect()});
     }
 
-    void VideoPlayer::fillSize(CCSize size) {
+    inline void VideoPlayer::fillSize(CCSize size) {
         if (m_dimensions.aspect() > size.aspect()) {
             setWidth(size.width);
         } else {
@@ -277,27 +277,27 @@ namespace videoplayer {
         }
     }
 
-    void VideoPlayer::setVolume(float volume) {
+   inline  void VideoPlayer::setVolume(float volume) {
         m_volume = volume;
         m_channel->setVolume(volume);
     }
 
-    void VideoPlayer::pause() {
+    inline void VideoPlayer::pause() {
         m_channel->setPaused(true);
         m_paused = true;
     }
 
-    void VideoPlayer::resume() {
+    inline void VideoPlayer::resume() {
         m_channel->setPaused(false);
         m_paused = false;
     }
 
-    void VideoPlayer::toggle() {
+    inline void VideoPlayer::toggle() {
         if (m_paused) return resume();
         pause();
     }
 
-    bool VideoPlayer::isPaused() {
+    inline  bool VideoPlayer::isPaused() {
         return m_paused;
     }
 }
