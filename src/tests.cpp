@@ -1,5 +1,5 @@
 #include <Geode/modify/MenuLayer.hpp>
-#include "VideoPlayer.hpp"
+#include "../include/VideoPlayer.hpp"
 using namespace geode::prelude;
 class $modify(TestLayer, MenuLayer)
 {

@@ -1,7 +1,7 @@
 // https://github.com/phoboslab/pl_mpeg/blob/master/pl_mpeg_player.c
 // https://katyscode.wordpress.com/2013/02/28/cutting-your-teeth-on-fmod-part-5-real-time-streaming-of-programmatically-generated-audio/
 #define PL_MPEG_IMPLEMENTATION
-#include "VideoPlayer.hpp"
+#include "../include/VideoPlayer.hpp"
 #include <Geode/Bindings.hpp>
 #include <Geode/Geode.hpp>
 #include <math.h>
