@@ -62,6 +62,8 @@ namespace videoplayer {
         plm_set_loop(m_stream, loop);
         m_loop = loop;
 
+        this->m_maxTime = plm_get_duration(m_stream);
+
         plm_set_video_decode_callback(m_stream, VideoPlayer::videoCallback, this);
         plm_set_audio_decode_callback(m_stream, VideoPlayer::audioCallback, this);
 
@@ -142,7 +144,8 @@ namespace videoplayer {
         FMOD::ChannelGroup* group;
 
         FMODAudioEngine::sharedEngine()->m_system->getMasterChannelGroup(&group);
-
+        //group = FMODAudioEngine::sharedEngine()->m_globalChannel;
+		//FMODAudioEngine::sharedEngine()->m_system->createChannelGroup("Fix_Audio", &group);
         engine->m_system->playSound(m_sound, group, false, &m_channel);
         m_channel->setVolume(m_volume);
         
@@ -156,7 +159,6 @@ namespace videoplayer {
         VideoPlayer* self;
         ((FMOD::ChannelControl*)chanControl)->getUserData((void**)&self);
         if (self->m_stopped) return FMOD_OK; // For destructor/onExit
-
         self->m_channel->stop();
         self->m_sound->release();
 
@@ -166,7 +168,29 @@ namespace videoplayer {
 
     static int times = 0;
     void VideoPlayer::update(float delta) {
-        if (!m_paused) plm_decode(m_stream, delta);
+        if (!m_paused) {
+            plm_decode(m_stream, delta);
+            m_currentTime = plm_get_time(m_stream);
+
+            if (!m_loop && m_currentTime >= m_maxTime) {
+                if (m_onVideoEnd) { 
+                    m_onVideoEnd(); // Trigger callback
+                    m_onVideoEnd = nullptr;
+                }
+            }
+        }
+    }
+
+    double VideoPlayer::getMaxTime() const {
+        return m_maxTime;
+    }
+
+    double VideoPlayer::getCurrentTime() const {
+        return m_currentTime;
+    }
+
+    void VideoPlayer::onVideoEnd(std::function<void()> callback) {
+        m_onVideoEnd = std::move(callback);
     }
 
     inline void VideoPlayer::draw() {

@@ -56,6 +56,9 @@ namespace videoplayer {
         bool m_loop;
         bool m_stopped;
         float m_volume = 1.0f;
+        double m_currentTime = 0.0;
+        double m_maxTime = 1.0;
+        std::function<void()> m_onVideoEnd = nullptr;
 
     public:
 
@@ -120,6 +123,26 @@ namespace videoplayer {
          * @return The playback status
          */
         bool isPaused();
+         /**
+         * @brief Returns the max play time of playback
+         * 
+         * @return The playback max time
+         */
+        double getMaxTime() const;
+        /**
+         * @brief Returns the current time of playback
+         * 
+         * @return The playback current time
+         */
+        double getCurrentTime() const;
+
+         /**
+         * @brief set the ending callback when the video finishes
+         * 
+         * @param callback The function to run
+         */
+        void onVideoEnd(std::function<void()> callback);
+
     };
 }
 
