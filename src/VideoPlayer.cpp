@@ -2,10 +2,11 @@
 // https://katyscode.wordpress.com/2013/02/28/cutting-your-teeth-on-fmod-part-5-real-time-streaming-of-programmatically-generated-audio/
 #define PL_MPEG_IMPLEMENTATION
 #include "VideoPlayer.hpp"
+#include <Geode/Bindings.hpp>
+#include <Geode/Geode.hpp>
 #include <math.h>
 
 using namespace geode::prelude;
-using namespace cocos2d;
 
 #define APP_SHADER_SOURCE(...) #__VA_ARGS__
 

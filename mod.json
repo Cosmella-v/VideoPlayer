@@ -11,7 +11,7 @@
 	"name": "Video Player",
 	"resources": {"files": ["res/*.mpeg"]},
 	"tags" : ["api","offline","utility"],
-	"developers": ["fig", "Alphalaneous"],
+	"developers": ["fig", "Alphalaneous","Viper"],
 	"description": "Provides an API for playing mpeg (.mpg) videos",
 	"api": {
 		"include": [

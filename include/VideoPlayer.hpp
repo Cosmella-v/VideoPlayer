@@ -2,6 +2,7 @@
 #define _VIDEO_PLAYER_HPP
 
 #include <Geode/Bindings.hpp>
+#include <Geode/Geode.hpp>
 #include <Geode/cocos/platform/CCGL.h>
 
 #pragma warning(disable:4996)
@@ -21,7 +22,7 @@
 #endif
 
 typedef unsigned int GLuint;
-
+using namespace geode::prelude;
 
 namespace videoplayer {
     class VIDEO_PLAYER_DLL VideoPlayer : public cocos2d::CCNodeRGBA {
