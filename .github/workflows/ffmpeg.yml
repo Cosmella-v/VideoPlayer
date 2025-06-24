@@ -4,27 +4,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-workflow-structure:
-    name: Test GitHub Actions Workflow (No Build)
+  test-upload-all:
+    name: Upload Entire Workspace
     runs-on: windows-latest
 
     steps:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    - name: Simulate steps (no vcpkg install)
+    - name: Simulate output files
       run: |
-        echo Simulating vcpkg install step...
-        mkdir dlls
-        echo dummy > dlls\dummy.dll
-        echo Collecting dummy dlls...
-        dir dlls
+        mkdir output
+        echo test-dll > output\lib1.dll
+        echo test-lib > output\lib1.lib
+        echo test-log > output\log.txt
+        mkdir output\subdir
+        echo test-subdir > output\subdir\file.txt
 
-    - name: Zip dummy DLLs
-      run: Compress-Archive -Path dlls\* -DestinationPath windows_dlls.zip
+    - name: Zip entire workspace
+      run: |
+        Compress-Archive -Path * -DestinationPath full_output.zip
 
-    - name: Upload dummy zip
+    - name: Upload full workspace zip
       uses: actions/upload-artifact@v4
       with:
-        name: test-windows-dlls
-        path: windows_dlls.zip
+        name: full-workspace
+        path: full_output.zip
