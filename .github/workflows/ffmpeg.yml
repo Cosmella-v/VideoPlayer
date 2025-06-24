@@ -1,0 +1,32 @@
+name: build ffmpeg
+
+jobs:
+  build-windows-dlls:
+    name: Collect and Upload Windows DLLs
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+
+    - name: Setup vcpkg (if needed)
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+        .\vcpkg\vcpkg.exe install ffmpeg[core,avcodec,avformat,avfilter,swscale,swresample,amf,x264,x265,nvcodec,openh264,aom,vpx]:x64-windows-static --recurse
+
+    - name: Collect DLLs
+      run: |
+        mkdir dlls
+        dir . /s /b | findstr /i "\.dll$" > dll_list.txt
+        for /f "usebackq tokens=*" %%a in (dll_list.txt) do copy "%%a" dlls\
+
+    - name: Zip DLLs
+      run: |
+        Compress-Archive -Path dlls\* -DestinationPath windows_dlls.zip
+
+    - name: Upload DLL zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-dlls
+        path: windows_dlls.zip

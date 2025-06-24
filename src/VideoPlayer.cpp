@@ -1,11 +1,32 @@
-// https://github.com/phoboslab/pl_mpeg/blob/master/pl_mpeg_player.c
-// https://katyscode.wordpress.com/2013/02/28/cutting-your-teeth-on-fmod-part-5-real-time-streaming-of-programmatically-generated-audio/
-#define PL_MPEG_IMPLEMENTATION
+// 0.98 MB (1,035,001 bytes)
 #include "VideoPlayer.hpp"
 #include <math.h>
-
 using namespace geode::prelude;
 using namespace cocos2d;
+
+#define start_video_stream(filename, fmt_ctx, codec_ctx, codec, stream_index)               \
+    do {                                                                                    \
+        if (avformat_open_input(&(fmt_ctx), (filename), NULL, NULL) < 0) {                 \
+            log::error("Could not open input file: {}", filename);                \
+            break;                                                                          \
+        }                                                                                   \
+        if (avformat_find_stream_info((fmt_ctx), NULL) < 0) {                               \
+            log::error("Failed to get stream info");                                 \
+            break;                                                                          \
+        }                                                                                   \
+        (stream_index) = av_find_best_stream((fmt_ctx), AVMEDIA_TYPE_VIDEO, -1, -1, &(codec), 0); \
+        if ((stream_index) < 0) {                                                           \
+            log::error("Could not find a video stream");                             \
+            break;                                                                          \
+        }                                                                                   \
+        (codec_ctx) = avcodec_alloc_context3((codec));                                      \
+        avcodec_parameters_to_context((codec_ctx), (fmt_ctx)->streams[(stream_index)]->codecpar); \
+        if (avcodec_open2((codec_ctx), (codec), NULL) < 0) {                                \
+            log::error("Could not open codec");                                      \
+            break;                                                                          \
+        }                                                                                   \
+    } while (0)
+
 
 #define APP_SHADER_SOURCE(...) #__VA_ARGS__
 
@@ -48,9 +69,9 @@ namespace videoplayer {
 
         // GENERAL
         m_path = path;
-        m_stream = plm_create_with_filename(m_path.string().c_str());
+        start_video_stream(m_path.string().c_str(), m_fmt_ctx, m_codec_ctx, m_codec, m_video_stream_index);
         
-        if (!m_stream) {
+        /*if (!m_stream) {
             log::error("File at {} not found", m_path.string());
             return false;
         };
@@ -59,14 +80,18 @@ namespace videoplayer {
             return false;
         }
 
-        plm_set_loop(m_stream, loop);
+        //plm_set_loop(m_stream, loop);
         m_loop = loop;
 
-        plm_set_video_decode_callback(m_stream, VideoPlayer::videoCallback, this);
-        plm_set_audio_decode_callback(m_stream, VideoPlayer::audioCallback, this);
+        //plm_set_video_decode_callback(m_stream, VideoPlayer::videoCallback, this);
+        //plm_set_audio_decode_callback(m_stream, VideoPlayer::audioCallback, this);
+        */
 
         // VIDEO
-        m_dimensions = CCSize(m_stream->video_decoder->mb_width, m_stream->video_decoder->mb_height);
+        int height = m_fmt_ctx->streams[m_video_stream_index]->codecpar->height;
+        int width = m_fmt_ctx->streams[m_video_stream_index]->codecpar->width;
+
+        m_dimensions = CCSize(width, height);
 
         CCGLProgram* shader = new CCGLProgram;
 
@@ -81,8 +106,8 @@ namespace videoplayer {
 
         const char* texture_names[3] = {"texture_y", "texture_cb", "texture_cr"};
 
-        plm_frame_t* frame = &m_stream->video_decoder->frame_current;
-        plm_plane_t planes[3] = {frame->y, frame->cb, frame->cr};
+       // plm_frame_t* frame = &m_stream->video_decoder->frame_current;
+       // plm_plane_t planes[3] = {frame->y, frame->cb, frame->cr};
 
         for (int i = 0; i < 3; i++) {
             GLuint texture;
@@ -123,15 +148,19 @@ namespace videoplayer {
     void VideoPlayer::initAudio() {
         FMODAudioEngine* engine = FMODAudioEngine::sharedEngine();
 
-        int sampleRate = plm_get_samplerate(m_stream);
+        int samples_per_frame = m_codec_ctx->frame_size;
+        int channels = m_codec_ctx->channels;
+        int bytes_per_sample = av_get_bytes_per_sample(m_codec_ctx->sample_fmt);
+        double duration_seconds = (double)m_fmt_ctx->duration / AV_TIME_BASE;
+        int decode_buffer_size = samples_per_frame * channels * bytes_per_sample;
 
         FMOD_CREATESOUNDEXINFO soundInfo;
         memset(&soundInfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
         soundInfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
-        soundInfo.decodebuffersize = PLM_AUDIO_SAMPLES_PER_FRAME * 2;
-        soundInfo.length = sampleRate * 2 * sizeof(float) * plm_get_duration(m_stream);
+        soundInfo.decodebuffersize = decode_buffer_size;
+        soundInfo.length = (unsigned int)(m_codec_ctx->sample_rate * channels * bytes_per_sample * duration_seconds);
         soundInfo.numchannels = 2;
-        soundInfo.defaultfrequency = sampleRate;
+        soundInfo.defaultfrequency = m_codec_ctx->sample_rate;
         soundInfo.format = FMOD_SOUND_FORMAT_PCMFLOAT;
         soundInfo.pcmreadcallback = &VideoPlayer::PCMRead;
         soundInfo.userdata = this;
@@ -166,7 +195,7 @@ namespace videoplayer {
 
     static int times = 0;
     void VideoPlayer::update(float delta) {
-        if (!m_paused) plm_decode(m_stream, delta);
+        if (!m_paused) {}; //plm_decode(m_stream, delta);
     }
 
     void VideoPlayer::draw() {
@@ -203,7 +232,7 @@ namespace videoplayer {
         onExit();
     }
 
-    void VideoPlayer::videoCallback(plm_t* mpeg, plm_frame_t* frame, void* user) {
+    /*void VideoPlayer::videoCallback(plm_t* mpeg, plm_frame_t* frame, void* user) {
         VideoPlayer* self = (VideoPlayer*) user;
 
         plm_plane_t* frames[3] = {&frame->y, &frame->cb, &frame->cr};
@@ -231,7 +260,7 @@ namespace videoplayer {
         while (self->m_samples.size() > PLM_AUDIO_SAMPLES_PER_FRAME * 16) { // i think this is 4 frames of wiggle room but im not sure it just sounds best this way
             self->m_samples.pop();
         }
-    }
+    }*/
 
     FMOD_RESULT F_CALLBACK VideoPlayer::PCMRead(FMOD_SOUND *sound, void *data, unsigned int length) {
         VideoPlayer* self;

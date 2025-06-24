@@ -4,6 +4,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(VideoPlayer VERSION 1.0.0)
 
+if (MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+endif()
+
 file(GLOB SOURCES
 	src/*.cpp
 )
@@ -15,9 +19,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     pl_mpeg
 )
 
-if (PROJECT_IS_TOP_LEVEL) 
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _VIDEO_PLAYER_EXPORTING)
-endif()
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -34,5 +35,17 @@ elseif(APPLE)
 elseif(ANDROID)
     target_link_libraries(${PROJECT_NAME} GLESv2)
 endif()
-
+ 
 setup_geode_mod(${PROJECT_NAME})
+if (WIN32)
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/lib/windows 
+        
+    )
+    file(GLOB STATIC_LIBS "${CMAKE_SOURCE_DIR}/lib/windows/*.lib")
+endif()
+target_link_libraries(${PROJECT_NAME} ${STATIC_LIBS})
+
+if (PROJECT_IS_TOP_LEVEL) 
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _VIDEO_PLAYER_EXPORTING)
+endif()

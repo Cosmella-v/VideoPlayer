@@ -3,10 +3,12 @@
 
 #include <Geode/Bindings.hpp>
 #include <Geode/cocos/platform/CCGL.h>
-
-#pragma warning(disable:4996)
-#include "pl_mpeg.h"
-#pragma warning(default:4996)
+extern "C" {
+    #include <libavformat/avformat.h>
+    #include <libavcodec/avcodec.h>
+    #include <libavutil/imgutils.h>
+    #include <libavutil/avutil.h>
+}
 
 #include <queue>
 
@@ -37,13 +39,17 @@ namespace videoplayer {
         virtual ~VideoPlayer();
         virtual void onExit() override;
 
-        static void videoCallback(plm_t* mpeg, plm_frame_t* frame, void* user);
-        static void audioCallback(plm_t* mpeg, plm_samples_t* samples, void* user);
+        //static void videoCallback(plm_t* mpeg, plm_frame_t* frame, void* user);
+        //static void audioCallback(plm_t* mpeg, plm_samples_t* samples, void* user);
 
         static FMOD_RESULT F_CALLBACK PCMRead(FMOD_SOUND *sound, void *data, unsigned int length);
 
         std::filesystem::path m_path;
-        plm_t* m_stream;
+
+        AVFormatContext * m_fmt_ctx = NULL;
+        int m_video_stream_index = -1;
+        AVCodecContext * m_codec_ctx = NULL;
+        const AVCodec * m_codec = NULL;
 
         cocos2d::CCSize m_dimensions;
         GLuint m_textures[3]; // y, cb, cr
