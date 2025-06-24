@@ -4,29 +4,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-upload-all:
-    name: Upload Entire Workspace
+  ffmpeg-upload-all:
+    name: Upload ffmpeg
     runs-on: windows-latest
 
     steps:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    - name: Simulate output files
+    - name: Setup vcpkg (if needed)
       run: |
-        mkdir output
-        echo test-dll > output\lib1.dll
-        echo test-lib > output\lib1.lib
-        echo test-log > output\log.txt
-        mkdir output\subdir
-        echo test-subdir > output\subdir\file.txt
+        git clone https://github.com/microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+        .\vcpkg\vcpkg.exe install ffmpeg[core,avcodec,avformat,avfilter,swscale,swresample,amf,x264,x265,nvcodec,openh264,aom,vpx]:x64-windows-static --recurse
 
     - name: Zip entire workspace
       run: |
         Compress-Archive -Path * -DestinationPath full_output.zip
 
-    - name: Upload full workspace zip
+    - name: Upload full ffmpeg zip
       uses: actions/upload-artifact@v4
       with:
-        name: full-workspace
-        path: full_output.zip
+        name: full-ffmpeg
+        path: full_ffmpeg.zip
