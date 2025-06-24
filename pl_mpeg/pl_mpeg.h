@@ -1818,7 +1818,7 @@ double plm_demux_get_start_time(plm_demux_t *self, int type) {
 		return self->start_time;
 	}
 
-	int previous_pos = plm_buffer_tell(self->buffer);
+	size_t previous_pos = plm_buffer_tell(self->buffer);
 	int previous_start_code = self->start_code;
 	
 	// Find first video PTS
@@ -1856,7 +1856,7 @@ double plm_demux_get_duration(plm_demux_t *self, int type) {
 	long start_range = 64 * 1024;
 	long max_range = 4096 * 1024;
 	for (long range = start_range; range <= max_range; range *= 2) {
-		long seek_pos = file_size - range;
+		size_t seek_pos = file_size - range;
 		if (seek_pos < 0) {
 			seek_pos = 0;
 			range = max_range; // Make sure to bail after this round
@@ -1922,14 +1922,14 @@ plm_packet_t *plm_demux_seek(plm_demux_t *self, double seek_time, int type, int 
 	for (int retry = 0; retry < 32; retry++) {
 		int found_packet_with_pts = FALSE;
 		int found_packet_in_range = FALSE;
-		long last_valid_packet_start = -1;
+		size_t last_valid_packet_start = -1;
 		double first_packet_time = PLM_PACKET_INVALID_TS;
 
-		long cur_pos = plm_buffer_tell(self->buffer);
+		size_t cur_pos = plm_buffer_tell(self->buffer);
 
 		// Estimate byte offset and jump to it.
 		long offset = (seek_time - cur_time - scan_span) * byterate;
-		long seek_pos = cur_pos + offset;
+		size_t seek_pos = cur_pos + offset;
 		if (seek_pos < 0) {
 			seek_pos = 0;
 		}
@@ -1942,7 +1942,7 @@ plm_packet_t *plm_demux_seek(plm_demux_t *self, double seek_time, int type, int 
 		// Scan through all packets up to the seek_time to find the last packet
 		// containing an intra frame.
 		while (plm_buffer_find_start_code(self->buffer, type) != -1) {
-			long packet_start = plm_buffer_tell(self->buffer);
+			size_t packet_start = plm_buffer_tell(self->buffer);
 			plm_packet_t *packet = plm_demux_decode_packet(self, type);
 
 			// Skip packet if it has no PTS

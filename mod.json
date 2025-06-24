@@ -1,13 +1,17 @@
 {
-	"geode": "4.5.0",
+	"geode": "4.6.1",
 	"gd": {
-		"win": "2.206",
-		"mac": "2.206"
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
 	},
 	"version": "v1.0.1",
 	"id": "fig.video_player",
 	"name": "Video Player",
-	"developers": ["fig", "Alphalaneous"],
+	"resources": {"files": ["res/*.mpeg"]},
+	"tags" : ["api","offline","utility"],
+	"developers": ["fig", "Alphalaneous","Viper"],
 	"description": "Provides an API for playing mpeg (.mpg) videos",
 	"api": {
 		"include": [
