@@ -1,35 +1,30 @@
-name: ffmpeg build 
+name: ffmpeg build test
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-windows-dlls:
-    name: Collect and Upload Windows DLLs
+  test-workflow-structure:
+    name: Test GitHub Actions Workflow (No Build)
     runs-on: windows-latest
 
     steps:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    - name: Setup vcpkg (if needed)
+    - name: Simulate steps (no vcpkg install)
       run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        .\vcpkg\bootstrap-vcpkg.bat
-        .\vcpkg\vcpkg.exe install ffmpeg[core,avcodec,avformat,avfilter,swscale,swresample,amf,x264,x265,nvcodec,openh264,aom,vpx]:x64-windows-static --recurse
-
-    - name: Collect DLLs
-      run: |
+        echo Simulating vcpkg install step...
         mkdir dlls
-        dir . /s /b | findstr /i "\.dll$" > dll_list.txt
-        for /f "usebackq tokens=*" %%a in (dll_list.txt) do copy "%%a" dlls\
+        echo dummy > dlls\dummy.dll
+        echo Collecting dummy dlls...
+        dir dlls
 
-    - name: Zip DLLs
-      run: |
-        Compress-Archive -Path dlls\* -DestinationPath windows_dlls.zip
+    - name: Zip dummy DLLs
+      run: Compress-Archive -Path dlls\* -DestinationPath windows_dlls.zip
 
-    - name: Upload DLL zip
+    - name: Upload dummy zip
       uses: actions/upload-artifact@v4
       with:
-        name: windows-dlls
+        name: test-windows-dlls
         path: windows_dlls.zip
