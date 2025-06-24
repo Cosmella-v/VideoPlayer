@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  ffmpeg-upload-all:
-    name: Upload ffmpeg
+  test-upload-all:
+    name: Upload Entire Workspace
     runs-on: windows-latest
 
     steps:
@@ -22,8 +22,8 @@ jobs:
       run: |
         Compress-Archive -Path * -DestinationPath full_output.zip
 
-    - name: Upload full ffmpeg zip
+    - name: Upload full workspace zip
       uses: actions/upload-artifact@v4
       with:
-        name: full-ffmpeg
-        path: full_ffmpeg.zip
+        name: full-workspace
+        path: full_output.zip
