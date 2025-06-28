@@ -12,18 +12,28 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    - name: Setup vcpkg (if needed)
+    - name: Setup vcpkg and run ffmpeg with MD triplet
       run: |
         git clone https://github.com/microsoft/vcpkg.git
         .\vcpkg\bootstrap-vcpkg.bat
-        .\vcpkg\vcpkg.exe install ffmpeg[core,avcodec,avformat,avfilter,swscale,swresample,amf,x264,x265,nvcodec,openh264,aom,vpx]:x64-windows-static --recurse
 
-    - name: Zip entire workspace
+        # Create custom triplet for /MD build
+        $tripletPath = ".\vcpkg\triplets\community\x64-windows-md.cmake"
+        @"
+        set(VCPKG_TARGET_ARCHITECTURE x64)
+        set(VCPKG_CRT_LINKAGE dynamic)
+        set(VCPKG_LIBRARY_LINKAGE static)
+        set(VCPKG_SYSTEM_NAME Windows)
+        "@ | Set-Content -Encoding ASCII $tripletPath
+
+        .\vcpkg\vcpkg.exe install ffmpeg[core,avcodec,avformat,avfilter,swscale,swresample,amf,x264,x265,nvcodec,openh264,aom,vpx]:x64-windows-md --recurse
+
+    - name: Zip required files
       run: |
-        Compress-Archive -Path * -DestinationPath full_output.zip
+        Compress-Archive -Path (Get-ChildItem -Recurse -Path "vcpkg/installed/x64-windows-md" | ForEach-Object { $_.FullName }) -DestinationPath ffmpeglibs.zip
 
-    - name: Upload full workspace zip
+    - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: full-workspace
-        path: full_output.zip
+        name: Output
+        path: ffmpeglibs.zip

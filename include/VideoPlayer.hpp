@@ -1,6 +1,17 @@
 #ifndef _VIDEO_PLAYER_HPP
 #define _VIDEO_PLAYER_HPP
 
+#ifdef GEODE_IS_WINDOWS
+    #ifdef _VIDEO_PLAYER_EXPORTING
+        #define VIDEO_PLAYER_DLL __declspec(dllexport)
+    #else
+        #define VIDEO_PLAYER_DLL __declspec(dllimport)
+    #endif
+#else
+    #define VIDEO_PLAYER_DLL
+#endif
+
+
 #include <Geode/Bindings.hpp>
 #include <Geode/Geode.hpp>
 #include <Geode/cocos/platform/CCGL.h>
@@ -12,16 +23,6 @@ extern "C" {
 }
 
 #include <queue>
-
-#ifdef GEODE_IS_WINDOWS
-    #ifdef _VIDEO_PLAYER_EXPORTING
-        #define VIDEO_PLAYER_DLL __declspec(dllexport)
-    #else
-        #define VIDEO_PLAYER_DLL __declspec(dllimport)
-    #endif
-#else
-    #define VIDEO_PLAYER_DLL
-#endif
 
 typedef unsigned int GLuint;
 using namespace geode::prelude;

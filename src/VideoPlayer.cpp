@@ -84,22 +84,16 @@ namespace videoplayer {
         //plm_set_loop(m_stream, loop);
         m_loop = loop;
 
-<<<<<<< HEAD
         //plm_set_video_decode_callback(m_stream, VideoPlayer::videoCallback, this);
         //plm_set_audio_decode_callback(m_stream, VideoPlayer::audioCallback, this);
         */
-=======
-        this->m_maxTime = plm_get_duration(m_stream);
-
-        plm_set_video_decode_callback(m_stream, VideoPlayer::videoCallback, this);
-        plm_set_audio_decode_callback(m_stream, VideoPlayer::audioCallback, this);
->>>>>>> accb4f8ea2fce88ad87eb75162372ed6e2a170c4
 
         // VIDEO
         int height = m_fmt_ctx->streams[m_video_stream_index]->codecpar->height;
         int width = m_fmt_ctx->streams[m_video_stream_index]->codecpar->width;
 
         m_dimensions = CCSize(width, height);
+        log::debug("Size {} {}",width, height);
 
         CCGLProgram* shader = new CCGLProgram;
 
@@ -157,7 +151,7 @@ namespace videoplayer {
         FMODAudioEngine* engine = FMODAudioEngine::sharedEngine();
 
         int samples_per_frame = m_codec_ctx->frame_size;
-        int channels = m_codec_ctx->channels;
+        int channels = 2;
         int bytes_per_sample = av_get_bytes_per_sample(m_codec_ctx->sample_fmt);
         double duration_seconds = (double)m_fmt_ctx->duration / AV_TIME_BASE;
         int decode_buffer_size = samples_per_frame * channels * bytes_per_sample;
@@ -203,20 +197,7 @@ namespace videoplayer {
 
     static int times = 0;
     void VideoPlayer::update(float delta) {
-<<<<<<< HEAD
         if (!m_paused) {}; //plm_decode(m_stream, delta);
-=======
-        if (!m_paused) {
-            plm_decode(m_stream, delta);
-            m_currentTime = plm_get_time(m_stream);
-
-            if (!m_loop && m_currentTime >= m_maxTime) {
-                if (m_onVideoEnd) { 
-                    m_onVideoEnd(); // Trigger callback
-                    m_onVideoEnd = nullptr;
-                }
-            }
-        }
     }
 
     double VideoPlayer::getMaxTime() const {
@@ -229,7 +210,6 @@ namespace videoplayer {
 
     void VideoPlayer::onVideoEnd(std::function<void()> callback) {
         m_onVideoEnd = std::move(callback);
->>>>>>> accb4f8ea2fce88ad87eb75162372ed6e2a170c4
     }
 
     void VideoPlayer::draw() {

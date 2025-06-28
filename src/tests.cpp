@@ -1,6 +1,7 @@
 #include <Geode/modify/MenuLayer.hpp>
 #include "../include/VideoPlayer.hpp"
 using namespace geode::prelude;
+// 33.0 MB
 class $modify(TestLayer, MenuLayer)
 {
     void Vid() {
@@ -15,11 +16,12 @@ class $modify(TestLayer, MenuLayer)
 
         this->addChild(video);
     }
-	virtual bool init()
+	bool init()
 	{
 		if (!MenuLayer::init())
 			return false;
-        
+
+        log::debug("inited");
         Loader::get()->queueInMainThread([=] {
             Vid();
         });
