@@ -1,3 +1,4 @@
+#include <Geode/Geode.hpp>
 #include <Geode/modify/MenuLayer.hpp>
 #include "../include/VideoPlayer.hpp"
 using namespace geode::prelude;
@@ -15,16 +16,18 @@ class $modify(TestLayer, MenuLayer)
         video->setPosition(pos->getWinSize() / 2);
 
         this->addChild(video);
-    }
+    };
+
+
 	bool init()
 	{
 		if (!MenuLayer::init())
 			return false;
 
         log::debug("inited");
-        Loader::get()->queueInMainThread([=] {
+        //Loader::get()->queueInMainThread([=] {
             Vid();
-        });
+       // });
 
         return true;
     };

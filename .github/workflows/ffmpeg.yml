@@ -1,39 +1,50 @@
-name: ffmpeg build test
+name: Build FFmpeg with Debug and Release
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-upload-all:
-    name: Upload Entire Workspace
+  build-ffmpeg:
     runs-on: windows-latest
 
     steps:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    - name: Setup vcpkg and run ffmpeg with MD triplet
+    - name: Setup vcpkg
       run: |
         git clone https://github.com/microsoft/vcpkg.git
         .\vcpkg\bootstrap-vcpkg.bat
 
-        # Create custom triplet for /MD build
-        $tripletPath = ".\vcpkg\triplets\community\x64-windows-md.cmake"
+        # Create custom triplet for Release (/MD)
+        $releaseTriplet = ".\vcpkg\triplets\community\x64-windows-md-release.cmake"
         @"
         set(VCPKG_TARGET_ARCHITECTURE x64)
         set(VCPKG_CRT_LINKAGE dynamic)
         set(VCPKG_LIBRARY_LINKAGE static)
         set(VCPKG_SYSTEM_NAME Windows)
-        "@ | Set-Content -Encoding ASCII $tripletPath
+        "@ | Set-Content -Encoding ASCII $releaseTriplet
 
-        .\vcpkg\vcpkg.exe install ffmpeg[core,avcodec,avformat,avfilter,swscale,swresample,amf,x264,x265,nvcodec,openh264,aom,vpx]:x64-windows-md --recurse
+        # Create custom triplet for Debug (/MDd)
+        $debugTriplet = ".\vcpkg\triplets\community\x64-windows-md-debug.cmake"
+        @"
+        set(VCPKG_TARGET_ARCHITECTURE x64)
+        set(VCPKG_CRT_LINKAGE dynamic)
+        set(VCPKG_LIBRARY_LINKAGE static)
+        set(VCPKG_SYSTEM_NAME Windows)
+        "@ | Set-Content -Encoding ASCII $debugTriplet
 
-    - name: Zip required files
+    - name: Install FFmpeg (Release)
       run: |
-        Compress-Archive -Path (Get-ChildItem -Recurse -Path "vcpkg/installed/x64-windows-md" | ForEach-Object { $_.FullName }) -DestinationPath ffmpeglibs.zip
+        .\vcpkg\vcpkg.exe install ffmpeg[core,avcodec,avformat,avfilter,swscale,swresample,amf,x264,x265,nvcodec,openh264,aom,vpx]:x64-windows-md-release --recurse
+    - name: Archive Release build
+      run: |
+        Compress-Archive -Path "vcpkg/installed/x64-windows-md-release" -DestinationPath ffmpeg_release.zip
 
-    - name: Upload
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Output
-        path: ffmpeglibs.zip
+        name: ffmpeg-libs
+        path: |
+          ffmpeg_release.zip
+          ffmpeg_debug.zip

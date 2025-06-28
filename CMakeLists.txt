@@ -9,11 +9,6 @@ else()
 endif()
 
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-
-#if (MSVC)
-#    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-#endif()
 
 project(VideoPlayer VERSION 1.0.0)
 
@@ -23,10 +18,6 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE
     include
 )
-
-#set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Final>:Final>")
-#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-#set_property(TARGET ${PROJECT_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")

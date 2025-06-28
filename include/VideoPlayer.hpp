@@ -15,6 +15,7 @@
 #include <Geode/Bindings.hpp>
 #include <Geode/Geode.hpp>
 #include <Geode/cocos/platform/CCGL.h>
+
 extern "C" {
     #include <libavformat/avformat.h>
     #include <libavcodec/avcodec.h>
@@ -41,17 +42,24 @@ namespace videoplayer {
         virtual ~VideoPlayer();
         virtual void onExit() override;
 
-        //static void videoCallback(plm_t* mpeg, plm_frame_t* frame, void* user);
-        //static void audioCallback(plm_t* mpeg, plm_samples_t* samples, void* user);
-
         static FMOD_RESULT F_CALLBACK PCMRead(FMOD_SOUND *sound, void *data, unsigned int length);
+
+        void decodeFrame();
+
+        double m_lastframe = 0.0;
+        double m_framerate = 0;
+        double m_frameTime = 60.0;
 
         std::filesystem::path m_path;
 
-        AVFormatContext * m_fmt_ctx = NULL;
-        int m_video_stream_index = -1;
-        AVCodecContext * m_codec_ctx = NULL;
         const AVCodec * m_codec = NULL;
+        AVFormatContext * m_fmt_ctx = NULL;
+        AVCodecContext * m_codec_ctx = NULL;
+        int m_video_stream_index = -1;
+
+        const AVCodec * m_audio_codec = NULL;
+        AVCodecContext* m_audio_codec_ctx = NULL;
+        int m_audio_stream_index = -1;
 
         cocos2d::CCSize m_dimensions;
         GLuint m_textures[3]; // y, cb, cr
